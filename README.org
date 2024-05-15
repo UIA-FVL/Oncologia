@@ -1,0 +1,112 @@
+#+TITLE: Manual de Uso
+#+AUTHOR: Quantil SAS
+#+LANGUAGE: es
+#+OPTIONS: toc:nil
+
+En este repositorio se define la librería ~extraer~, la cual es el resultado de un trabajo conjunto entre [[https://quantil.co/][Quantil SAS]]  y el [[https://centrodeinvestigacionesclinicas.fvl.org.co/][Centro de Investigaciones Clínicas de la Fundación Valle de Lili]].
+
+Adicionalmente, se encuentran en este repositorio tres cuadernos interactivos (/jupyter notebooks/): ~Lectura.ipynb~, ~Extraccion.ipynb~ y ~Supervivencia.ipynb~.
+En estos cuadernos se ejecutan, paso a paso, la lectura de los registros oncológicos transmitidos por la /Fundación Valle de Lili/ a /Quantil/, la extracción de las características clínicas definidas y un análisis de supervivencia basado en ellas.  
+
+* Descripción de la librería
+# ~extraer~
+# Librería usada para estructurar el registro oncológico de la Fundación Valle de Lili.
+En esta librería se definen funciones para extraer una serie de características de interés clínico a partir del texto libre de los reportes de patología.
+Cada uno de estos algoritmos supone que un reporte de patología se ha representado como una fila dentro de una tabla que tiene al menos las siguientes columnas:
+- ~diagnostico~: Contiene el diagnóstico de la patología.
+- ~micro~: Contiene la descripción microscópica del tumor.
+- ~macro~: Contiene la descripción macroscópica del tumor.
+- ~tipo_examen~: Informa el tipo de examen realizado.
+  
+Entre las características que se pueden extraer de un reporte están incluidas:
+- La topografía, este es el órgano donde se localiza el tumor, y su lateralidad cuando aplica.
+- La morfología de las células del tumor.
+- El comportamiento (benigno/invasivo) y el grado de diferenciación del tumor.
+- La presencia (o ausencia) de invasión linfo-vascular.
+- La presencia (o ausencia) de tumor residual en los márgenes quirúrgicos.
+- El procedimiento realizado para diagnosticar o estadificar la enfermedad.
+- El método de confirmación diagnóstica utilizado, tanto para tumores sólidos como para neoplasias hematopoyéticas y linfoides.
+- El número de ganglios linfáticos regionales removidos y examinados por el patólogo, y el número de estos que resultaron positivos para metástasis.  
+- El tamaño del tumor.
+- La estadificación según el sistema TNM.
+- La presencia (o ausencia) de metástasis en los huesos, el cerebro, el pulmón, el hígado, los ganglios linfáticos distantes u otro sitio no especificado.
+
+** Instalación y ejecución
+Esta es una librería de ~python~ compatible con las versiones 3.7 o superior.
+
+Para instalar la librería en el sistema, basta con ejecutar:
+#+begin_src shell
+python setup.py install
+#+end_src
+Una vez instalada, puede importarse desde cualquier /script/ o cuaderno interactivo con el comando src_python[:exports code]{import extraer}.
+
+A modo de ejemplo, supongamos que el archivo ~registros.csv~ contiene una tabla con cinco registros; el siguiente bloque de código lee este archivo, extrae la topografía del tercer registro y la guarda en la variable ~topografia_3~,
+y finalmente extrae todas las características de todos los registros, ajusta el formato y guarda el resultado en el archivo ~registros_extraidos.csv~.
+
+#+begin_src python
+import extraer
+import pandas as pd
+
+registros = pd.read_csv("registros.csv")
+
+topografia_13 = extraer.topografia(registros[2])
+
+registros_extraidos = extraer.todas_las_variables(registros)
+
+pd.to_csv(extraer.dar_formato(registros_extraidos), "registros_extraidos.csv")
+#+end_src
+
+
+** Estructura y contenido de la librería
+La librería ~extraer~ está compuesta por cinco módulos:
+- ~auxiliares~
+  En este módulo se definen funciones generales de procesamiento de texto que sirven como apoyo para la definición e inspección de los algoritmos presentes en los otros módulos. 
+- ~corpus~
+  Este módulo contiene una amplia gama de expresiones regulares que permiten identificar las palabras claves para la extracción de las características.
+  Específicamente, los sub-módulos ~corpus.topografia~ y ~corpus.morfologia~  intentan  capturar la taxonomía y términos de la [[http://www.minsa.gob.pa/sites/default/files/general/2003_clasificacion_internacional_de_enfermedades_para_oncologia_-_cie-o_3.pdf][CIE-O-3]].
+- ~primarias~
+  Aquí se encuentra la definición de las funciones:
+  ~topografia~, ~lateralidad~ y ~morfologia~.
+- ~complementarias~
+   Aquí se encuentra la definición de las funciones:
+    ~comportamiento~, ~grado~, ~lymph~, ~margenes~, ~metodo~, ~procedimiento~, ~pTNM~ y ~tamanho~.
+- ~metastasis~
+   Aquí se encuentra la definición de las funciones:
+    ~cerebro~, ~distantes~, ~ganglios~, ~higado~, ~hueso~, ~pulmon~ y ~otras~.
+
+Adicionalmente, en el /script/ de inicio de la librería, ~init.py~, se encuentran:
+- diccionarios con los nombres y descripciones de las características a extraer,
+- funciones que permiten extraer ~todas_las_variables~ y ~todas_las variables_en_paralelo~,
+- y una función para ~dar_formato~ a una base de registros despues de extraer todas las características.
+    
+* Descripción de los cuadernos interactivos
+** El cuaderno ~Lectura.ipynb~
+
+En este cuaderno se cargan los reportes de patología contenidos en los archivos:
+#+begin_src 
+Data/
+-- 1_BD_JCB_malignidad_QUANTIL.xlsx
+-- 2_BD_ERP_malignidad_QUANTIL.xlsx
+-- 3_BD_PATHOX_2018_malignidad_QUANTIL.xlsx
+-- 3_BD_PATHOX_2019_malignidad_QUANTIL.xlsx
+#+end_src
+
+Estos reportes se estandarizan y pre-procesan, la base de datos resultante se guarda en el archivo
+~Outputs/df_piloto.p~
+
+Adicionalmente, se carga la lista de casos usados para la validación del archivo
+~Data/plantilla_casos_piloto.xlsx~ y la información de estos casos se guarda en ~Outputs/df_piloto.p~.
+
+** El cuaderno ~Extraccion.ipynb~
+
+En este cuaderno se cargan las bases de datos consolidadas en el cuaderno anterior, se ejecuta la extracción de todas las características y se guarda el resultado en el archivo ~Outputs/base_completa_extraida_v1_0.xlsx~.  
+    
+Además, se miran algunos ejemplos y calculan algunas estadísticas descriptivas de los resultados de la extracción.
+
+** El cuaderno ~Supervivencia.ipynb~
+
+Este cuaderno contiene un análisis de supervivencia basado en las características extraídas de los reportes de patología de la Fundación.
+Este análisis incluye:
+- Generación de la estimación de Kaplan-Meyer para la función de supervivencia.
+- Entrenamiento de modelos de riesgos proporcionales de Cox.
+- Entrenamiento de modelos de bosques aleatorios de supervivencia.

@@ -1,0 +1,22 @@
+name: FVL
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8.*
+  - pip=20.2.*
+  - pandas=1.1.*
+  - scikit-learn
+  - seaborn
+  - pytorch
+  - torchvision
+  - lifelines=0.25.*
+  - ipykernel
+  - xlrd
+  - xlwt
+  - openpyxl
+  - nltk
+  - pip:
+    - pandarallel==1.4.*
+    - pysurvival==0.1.*

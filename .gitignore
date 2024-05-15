@@ -1,0 +1,8 @@
+Data/
+Outputs/
+Test.ipynb
+
+
+*.ipynb_*/
+*__pycache__*
+*.egg-info/
