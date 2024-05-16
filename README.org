@@ -110,3 +110,5 @@ Este análisis incluye:
 - Generación de la estimación de Kaplan-Meyer para la función de supervivencia.
 - Entrenamiento de modelos de riesgos proporcionales de Cox.
 - Entrenamiento de modelos de bosques aleatorios de supervivencia.
+
+* DOI del artículo: https://doi.org/10.25100/cm.v54i1.5300
